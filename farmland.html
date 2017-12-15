@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+
+<table>
+	<tr>
+    	<td>Berries: </td>
+        <td id="berries">5 </td>
+    </tr>
+</table>
+<button onClick="gatherBerries()"> Gather Berries</button>
+<button> Plant Berry Bush </button>
+
+<script>
+	var berries = {name:"berries",amount:0};
+    
+    var items = [berries];
+    
+    updateDisplay();
+    
+    function updateDisplay() {
+    	for (var i = 0; i < items.length; i++)
+        	document.getElementById(items[i].name).innerHTML = items[i].amount;
+    }
+    
+    function gatherBerries() {
+    	berries.amount++;
+        updateDisplay();
+    }
+</script>
+
+
+</body>
+</html>
