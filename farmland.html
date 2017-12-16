@@ -1,29 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
+<style>
+    .structures {
+        margin-left: 25%;
+        padding: 15px;
+        padding-bottom: 5px;
+        border:1px solid;
+        display: inline-block;
+    }
+    
+    .btn-modern {
+        font-family: Helvetica;
+        font-size: 14px;
+        border-radius: 3px;
+        border: 1px solid #888;
+        padding: 10px;
+        width: 246px;
+        cursor: pointer;
+    }
+    
+    .btn-modern:focus {
+        outline:0;
+    }
+    
+    .header-bar {
+        width: 75%;
+        float:right;
+        text-decoration: underline;
+    }
+    
+    .menuItem {
+        cursor: pointer;
+    }
+    
+    td {
+        padding: 5px;
+    }
+    
+    hr {
+        margin-top:20px;
+    }
+</style>
 <title>Page Title</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 <body>
 
+<div class="header-bar">
+    <table>
+        <tr>
+            <td class="menuItem">Farm</td>
+            <td class="menuItem">Store</td>
+        </tr>
+    </table>
+</div>
+    
 <table>
 	<tr>
     	<td>Berries: </td>
-        <td id="berries">0 </td>
-        <td id="berriesMax">/200</td>
+        <td style="width:30px" id="berries">0 </td>
+        <td id="berriesMax">/300</td>
         <td id="berriesIncrease"> (+0/s)</td>
         <td id="berriesCost">10</td>
     </tr>
 </table>
-<button onClick="gatherBerries()"> Gather Berries</button>
-<button id="berriesNew" onClick="berriesNew()">Berry Bush</button>
-
+    
+<div class="structures">
+    <button class="btn-modern" onClick="gatherBerries(this)"> Gather Berries</button>
+    <button class="btn-modern" id="berriesNew" onClick="berriesNew()">Berry Bush</button>
+    <hr>
+</div>
+    
+<div hidden>
+    <button>Corn</button>
+</div>
+    
 <script>
-	var berries = {name:"berries",amount:200,cost:10,multiplier:1.5,max:200,structureName:"Berry Bush"};
+	var berries = {name:"berries",amount:0,cost:10,multiplier:1.5,max:300,structureName:"Berry Bush"};
     
     var items = [berries];
-    var crops = {berries:{amount:0,output:5}};
-    var cycleTime = 100;
+    var crops = {berries:{amount:0,output:0.5}};
+    var cycleTime = 200;
     
     setInterval(gameUpdate, cycleTime);
     
@@ -47,9 +105,11 @@
         }
     }
     
-    function gatherBerries() {
+    function gatherBerries(given) {
     	if (berries.amount+1 <= berries.max)
             berries.amount++;
+        $(given).prop('disabled',true);
+        setTimeout(function(){$(given).prop('disabled',false)},150);
         updateDisplay();
     }
     
