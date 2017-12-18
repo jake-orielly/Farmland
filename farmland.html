@@ -20,7 +20,7 @@
         cursor: pointer;
     }
     
-    .btn-modern:focus {
+    button:focus {
         outline:0;
     }
     
@@ -55,6 +55,24 @@
 
     .mouseover:hover .mouseoverText {
         visibility: visible;
+    }
+    
+    .buy, .sell {
+        font-family: Helvetica;
+        font-size: 14px;
+        border-radius: 3px;
+        border: 1px solid #888;
+        padding: 10px;
+        width: 45px;
+        cursor: pointer;
+    }
+    
+    .buy {
+        color: green;
+    }
+    
+    .sell {
+        color: red;
     }
     
     td {
@@ -126,44 +144,42 @@
     var carrots = {name:"carrots",amount:10,max:100,price:3,structureName:"Carrot Plant"};
     var money = {name:"money", amount:0}
     
-    var items = [berries,carrots,money];
-    var crops = {berries:{amount:0,output:0.5,cost:10,multiplier:1.5,baseCost:10},carrots:{amount:0,output:0.8,cost:10,multiplier:1.3,baseCost:10}};
+    var crops = [berries,carrots];
+    var resources = [money];
+    var structures = {berries:{amount:0,output:0.5,cost:10,multiplier:1.5,baseCost:10},carrots:{amount:0,output:0.8,cost:10,multiplier:1.3,baseCost:10}};
     
     var menuItems = ["structures","store"];
     var cycleTime = 200;
     var priceMultiplier = 2/3;
     
     $("#store").hide();
-    for (var i = 0; i < items.length-1; i++) {
-        buildStoreButtons(items[i].name);
+    for (var i = 0; i < crops.length; i++) {
+        buildStoreButtons(crops[i].name);
     }
     setInterval(gameUpdate, cycleTime);
     
     function gameUpdate() {
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].amount + production(crops[items[i].name]) * cycleTime/1000 <= items[i].max)
-                items[i].amount += production(crops[items[i].name]) * cycleTime/1000;
+        for (var i = 0; i < crops.length; i++) {
+            if (crops[i].amount + production(structures[crops[i].name]) * cycleTime/1000 <= crops[i].max)
+                crops[i].amount += production(structures[crops[i].name]) * cycleTime/1000;
             else
-                items[i].amount = items[i].max;
+                crops[i].amount = crops[i].max;
             updateDisplay();
         }
     }
     
     function updateDisplay() {
         var tooBig = "";
-    	for (var i = 0; i < items.length; i++) {
-            if (i < items.length-1) {
-                document.getElementById(items[i].name).innerHTML = round(items[i].amount);
-                document.getElementById(items[i].name + "Max").innerHTML = "/" + round(items[i].max);
-                if (crops[items[i].name].cost > items[i].max)
-                    tooBig = "*";
-                if (crops[items[i].name].amount > 0)
-                    document.getElementById(items[i].name + "New").innerHTML = items[i].structureName + " (" + crops[items[i].name].amount + ")" + "<span id='" + items[i].name  + "Hover' class='mouseoverText'>" + capitalizeFirst(items[i].name) + ": " + round(crops[items[i].name].cost) + tooBig + "</span>";
-            }
-            else {
-                document.getElementById(items[i].name).innerHTML = round(items[i].amount);
-            }
+    	for (var i = 0; i < crops.length; i++) {
+            document.getElementById(crops[i].name).innerHTML = round(crops[i].amount);
+            document.getElementById(crops[i].name + "Max").innerHTML = "/" + round(crops[i].max);
+            if (structures[crops[i].name].cost > crops[i].max)
+                tooBig = "*";
+            if (structures[crops[i].name].amount > 0)
+                document.getElementById(crops[i].name + "New").innerHTML = crops[i].structureName + " (" + structures[crops[i].name].amount + ")" + "<span id='" + crops[i].name  + "Hover' class='mouseoverText'>" + capitalizeFirst(crops[i].name) + ": " + round(structures[crops[i].name].cost) + tooBig + "</span>";
         }
+        for (var i = 0; i < resources.length; i++)
+            document.getElementById(resources[i].name).innerHTML = round(resources[i].amount);
         
     }
     
@@ -177,17 +193,17 @@
     
     function structureNew(given) {  //Re-write this keeping in mind how variables have been reorganized w/ respect to structure v. resource (cost & multiplier)
         var item;
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].name == given) {
-                item = items[i];
+        for (var i = 0; i < crops.length; i++) {
+            if (crops[i].name == given) {
+                item = crops[i];
             }
         }
 
-        if (crops[item.name].cost <= item.amount) {
-            item.amount -= crops[item.name].cost;
-            crops[item.name].amount++;
-            crops[item.name].cost = crops[item.name].baseCost * Math.pow(crops[item.name].multiplier,crops[item.name].amount);
-            document.getElementById(item.name + "Increase").innerHTML = " (+" + round(production(crops[item.name])) + "/s)";
+        if (structures[item.name].cost <= item.amount) {
+            item.amount -= structures[item.name].cost;
+            structures[item.name].amount++;
+            structures[item.name].cost = structures[item.name].baseCost * Math.pow(structures[item.name].multiplier,structures[item.name].amount);
+            document.getElementById(item.name + "Increase").innerHTML = " (+" + round(production(structures[item.name])) + "/s)";
             updateDisplay();
         }
     }
@@ -248,14 +264,14 @@
     function buildStoreButtons(given) { //creates the HTML for all the buttons for 1 item in the store
         var result = "";
         result += "<td>" + capitalizeFirst(given) + "</td>";
-        result += "<td><button onClick = buy(" + given + ")>Buy</button></td>";
-        result += "<td><button onClick = buy(" + given + ",5)>x5</button></td>";
-        result += "<td><button onClick = buy(" + given + ",25)>x25</button></td>";
-        result += "<td><button onClick = buy(" + given + ",'-1')>All</button></td>";
-        result += "<td><button onClick = sell(" + given + ")>Sell</button></td>";
-        result += "<td><button onClick = sell(" + given + ",5)>x5</button></td>"; 
-        result += "<td><button onClick = sell(" + given + ",25)>x25</button></td>";
-        result += "<td><button onClick = sell(" + given + ",'-1')>All</button></td>"; 
+        result += "<td><button class='buy' onClick = buy(" + given + ")>Buy</button></td>";
+        result += "<td><button class='buy' onClick = buy(" + given + ",5)>x5</button></td>";
+        result += "<td><button class='buy' onClick = buy(" + given + ",25)>x25</button></td>";
+        result += "<td><button class='buy' onClick = buy(" + given + ",'-1')>All</button></td>";
+        result += "<td><button class='sell' onClick = sell(" + given + ")>Sell</button></td>";
+        result += "<td><button class='sell' onClick = sell(" + given + ",5)>x5</button></td>"; 
+        result += "<td><button class='sell' onClick = sell(" + given + ",25)>x25</button></td>";
+        result += "<td><button class='sell' onClick = sell(" + given + ",'-1')>All</button></td>"; 
         document.getElementById(given+"Store").innerHTML = result;
     }
 </script>
