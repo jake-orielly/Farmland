@@ -110,6 +110,12 @@
         <td id="carrotsMax">/100</td>
         <td id="carrotsIncrease"> (+0/s)</td>
     </tr>
+    <tr>
+    	<td>Wood: </td>
+        <td style="width:30px" id="wood">0 </td>
+        <td id="woodMax">/25</td>
+        <td id="woodIncrease"> (+0/s)</td>
+    </tr>
     <tr id="moneyInfo" hidden>
     	<td>Money: </td>
         <td id="money" style="width:30px">0 </td>
@@ -120,39 +126,43 @@
     <table>
         <tr>
             <td><button class="btn-modern" onClick="gatherBerries(this)"> Gather Berries</button></td>
-            <td><button class="btn-modern mouseover" id="berriesNew" onClick="structureNew('berries')">Berry Bush<span id="berriesHover" class="mouseoverText">Berries: 10</span></button></td>
+            <td><button class="btn-modern mouseover" id="berriesNew" onClick="structureNew('berryBush')">Berry Bush<span id="berriesHover" class="mouseoverText">Berries: 10</span></button></td>
         </tr>
         <tr>
-            <td><button class="btn-modern mouseover" id="carrotsNew" onClick="structureNew('carrots')">Carrot  Plant<span id="carrotsHover" class="mouseoverText">Carrots: 10</span></button>
+            <td><button class="btn-modern mouseover" id="carrotsNew" onClick="structureNew('carrotPlant')">Carrot  Plant<span id="carrotsHover" class="mouseoverText">Carrots: 10</span></button>
         </tr>
     </table>
     <hr>
 </div>
     
-<div class="structures" id="store" hidden>
+<div class="structures" id="store">
     <table>
         <tr id='berriesStore'>
         </tr>
         <tr id='carrotsStore'>
+        </tr>
+        <tr id='woodStore'>
         </tr>
     </table>
     <hr>
 </div>
     
 <script>
-	var berries = {name:"berries",amount:300,max:300,price:1.5,structureName:"Berry Bush"};
-    var carrots = {name:"carrots",amount:10,max:100,price:3,structureName:"Carrot Plant"};
+	var berries = {name:"berries",amount:10,max:300,price:1.5,structureName:"berryBush"};
+    var carrots = {name:"carrots",amount:0,max:100,price:3,structureName:"carrotPlant"};
+    var wood = {name:"wood", amount:0, max:25, price:10,structureName:"error"}
     var money = {name:"money", amount:0}
     
-    var crops = [berries,carrots];
+    var crops = [berries,carrots,wood];
     var resources = [money];
-    var structures = {berries:{amount:0,output:0.5,cost:10,multiplier:1.5,baseCost:10},carrots:{amount:0,output:0.8,cost:10,multiplier:1.3,baseCost:10}};
+    var structures = {berryBush:{resource:berries,amount:0,output:0.5,cost:10,multiplier:1.5,baseCost:10},carrotPlant:{resource:carrots,amount:0,output:0.8,cost:10,multiplier:1.3,baseCost:10}};
     
     var menuItems = ["structures","store"];
     var cycleTime = 200;
     var priceMultiplier = 2/3;
     
     $("#store").hide();
+    $("#workshop").hide();
     for (var i = 0; i < crops.length; i++) {
         buildStoreButtons(crops[i].name);
     }
@@ -160,8 +170,8 @@
     
     function gameUpdate() {
         for (var i = 0; i < crops.length; i++) {
-            if (crops[i].amount + production(structures[crops[i].name]) * cycleTime/1000 <= crops[i].max)
-                crops[i].amount += production(structures[crops[i].name]) * cycleTime/1000;
+            if (crops[i].amount + production(structures[crops[i].structureName]) * cycleTime/1000 <= crops[i].max)
+                crops[i].amount += production(structures[crops[i].structureName]) * cycleTime/1000;
             else
                 crops[i].amount = crops[i].max;
             updateDisplay();
@@ -173,10 +183,10 @@
     	for (var i = 0; i < crops.length; i++) {
             document.getElementById(crops[i].name).innerHTML = round(crops[i].amount);
             document.getElementById(crops[i].name + "Max").innerHTML = "/" + round(crops[i].max);
-            if (structures[crops[i].name].cost > crops[i].max)
+            if (structures[crops[i].structureName].cost > crops[i].max)
                 tooBig = "*";
-            if (structures[crops[i].name].amount > 0)
-                document.getElementById(crops[i].name + "New").innerHTML = crops[i].structureName + " (" + structures[crops[i].name].amount + ")" + "<span id='" + crops[i].name  + "Hover' class='mouseoverText'>" + capitalizeFirst(crops[i].name) + ": " + round(structures[crops[i].name].cost) + tooBig + "</span>";
+            if (structures[crops[i].structureName].amount > 0)
+                document.getElementById(crops[i].name + "New").innerHTML = crops[i].structureName + " (" + structures[crops[i].structureName].amount + ")" + "<span id='" + crops[i].name  + "Hover' class='mouseoverText'>" + capitalizeFirst(crops[i].name) + ": " + round(structures[crops[i].structureName].cost) + tooBig + "</span>";
         }
         for (var i = 0; i < resources.length; i++)
             document.getElementById(resources[i].name).innerHTML = round(resources[i].amount);
@@ -191,19 +201,14 @@
         updateDisplay();
     }
     
-    function structureNew(given) {  //Re-write this keeping in mind how variables have been reorganized w/ respect to structure v. resource (cost & multiplier)
-        var item;
-        for (var i = 0; i < crops.length; i++) {
-            if (crops[i].name == given) {
-                item = crops[i];
-            }
-        }
-
-        if (structures[item.name].cost <= item.amount) {
-            item.amount -= structures[item.name].cost;
-            structures[item.name].amount++;
-            structures[item.name].cost = structures[item.name].baseCost * Math.pow(structures[item.name].multiplier,structures[item.name].amount);
-            document.getElementById(item.name + "Increase").innerHTML = " (+" + round(production(structures[item.name])) + "/s)";
+    function structureNew(given) {
+        var item = structures[given].resource;
+        
+        if (structures[given].cost <= item.amount) {
+            item.amount -= structures[given].cost;
+            structures[given].amount++;
+            structures[given].cost = structures[given].baseCost * Math.pow(structures[given].multiplier,structures[given].amount);
+            document.getElementById(item.name + "Increase").innerHTML = " (+" + round(production(structures[given])) + "/s)";
             updateDisplay();
         }
     }
