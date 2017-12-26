@@ -148,14 +148,15 @@
 </div>
     
 <script>
-	var berries = {name:"berries",amount:0,max:300,price:1.5};
-    var carrots = {name:"carrots",amount:0,max:100,price:3};
+	var berries = {name:"berries",amount:30,max:300,price:1.5};
+    var carrots = {name:"carrots",amount:10,max:100,price:3};
     var wood = {name:"wood", amount:0, max:25, price:10}
     var money = {name:"money", amount:0}
     
     var crops = [berries,carrots,wood];
+    var crops2 = {berries:berries,carrots:carrots,wood:wood}; //Make this replace crops
     var resources = [money];
-    var structures = {berryBush:{resource:berries,amount:0,output:0.5,multiplier:1.5,baseCost:10,name:"Berry Bush"},carrotPlant:{resource:carrots,amount:0,output:0.8,multiplier:1.3,baseCost:10,name:"Carrot Plant"}};
+    var structures = {berryBush:{resource:berries,amount:0,output:0.5,multiplier:1.5,baseCost:{berries:10},name:"Berry Bush"},carrotPlant:{resource:carrots,amount:0,output:0.8,multiplier:1.3,baseCost:{carrots:10},name:"Carrot Plant"}};
     
     var menuItems = ["structures","store"];
     var cycleTime = 200;
@@ -182,7 +183,10 @@
     }
     
     function updateDisplay() {
+        var structureNum = "";
         var tooBig = "";
+        var cost,buttonText;
+        
     	for (var i = 0; i < crops.length; i++) {
             document.getElementById(crops[i].name).innerHTML = round(crops[i].amount);
             document.getElementById(crops[i].name + "Max").innerHTML = "/" + round(crops[i].max);
@@ -192,11 +196,21 @@
             document.getElementById(resources[i].name).innerHTML = round(resources[i].amount);
         
         for (var curr in structures) {
+            structureNum = "";
             if (structures.hasOwnProperty(curr)) {
-                if (cost(structures[curr]) > crops[i].max)
-                    tooBig = "*";
                 if (structures[curr].amount > 0)
-                    document.getElementById(structures[curr].resource.name + "New").innerHTML = structures[curr].name + "<span id='" + structures[curr].resource.name + "Hover' class='mouseoverText'>" + capitalizeFirst(structures[curr].resource.name) + ": " + round(cost(structures[curr])) +"</span>";
+                    structureNum = " (" + structures[curr].amount + ")";
+                buttonText = structures[curr].name + structureNum + "<span id='" + structures[curr].resource.name + "Hover' class='mouseoverText'>";
+                cost = calcCost(structures[curr]);
+                for (var resource in cost) {
+                    if (cost.hasOwnProperty(resource)) {
+                        if (cost[resource] > crops2[resource].max)
+                            tooBig = "*";
+                        buttonText += capitalizeFirst(resource) + ": " + round(cost[resource]) + tooBig + "<br>";
+                    }
+                }
+                buttonText += "</span>";
+                document.getElementById(structures[curr].resource.name + "New").innerHTML = buttonText; //TODO update to reflect extrication of resources and structures aka ref structure name
             }
         }
         
@@ -211,12 +225,21 @@
     }
     
     function structureNew(given) {
-        var item = structures[given].resource;
+        var resource = structures[given].resource;
+        var cost = calcCost(structures[given]);
+        var affordable = true;
+        for (var item in cost)
+            if (cost.hasOwnProperty(item))
+                if(cost[item] > crops2[item].amount)
+                    affordable = false;
         
-        if (cost(structures[given]) <= item.amount) {
-            item.amount -= cost(structures[given]);
+        if (affordable) {
+            for (var item in cost)
+                if (cost.hasOwnProperty(item))
+                    crops2[item].amount -= cost[item];
+            
             structures[given].amount++;
-            document.getElementById(item.name + "Increase").innerHTML = " (+" + round(production(structures[given])) + "/s)";
+            document.getElementById(resource.name + "Increase").innerHTML = " (+" + round(production(structures[given])) + "/s)";
             updateDisplay();
         }
     }
@@ -270,8 +293,12 @@
         }
     }
     
-    function cost(given) {
-        return given.baseCost * Math.pow(given.multiplier,given.amount);
+    function calcCost(given) {
+        var result = Object.assign({},given.baseCost); //Don't want these two to be aliased
+        for (var item in given.baseCost)
+            if (given.baseCost.hasOwnProperty(item))
+                result[item] = given.baseCost[item] * Math.pow(given.multiplier,given.amount);
+        return result;
     }
     
     function capitalizeFirst(given) {
