@@ -67,6 +67,11 @@
         cursor: pointer;
     }
     
+    button:active{
+        background:grey;
+        color: white;
+    }
+    
     .buy {
         color: green;
     }
@@ -149,14 +154,14 @@
 </div>
     
 <script>
-	var berries = {name:"berries",amount:999,max:1000,price:1.5};
-    var carrots = {name:"carrots",amount:10,max:400,price:3};
-    var wood = {name:"wood", amount:100, max:100, price:10}
-    var money = {name:"money", amount:50}
+	var berries = {name:"berries",amount:0,max:1000,price:1.5};
+    var carrots = {name:"carrots",amount:0,max:400,price:3};
+    var wood = {name:"wood", amount:0, max:100, price:10}
+    var money = {name:"money", amount:0}
     
     var crops = {berries:berries,carrots:carrots,wood:wood};
     var resources = [money];
-    var structures = {berryBush:{resource:berries,amount:0,output:0.5,multiplier:1.5,baseCost:{berries:10},name:"Berry Bush"},carrotPlant:{resource:carrots,amount:0,output:0.8,multiplier:1.3,baseCost:{carrots:10},name:"Carrot Plant"},barn:{resource:"storage",amount:0,output:{berries:500,carrots:100,wood:30},multiplier:1.8,baseCost:{wood:20},name:"Barn"}};
+    var structures = {berryBush:{resource:berries,amount:0,output:0.8,multiplier:1.5,baseCost:{berries:10},name:"Berry Bush"},carrotPlant:{resource:carrots,amount:0,output:0.5,multiplier:1.7,baseCost:{carrots:15},name:"Carrot Plant"},barn:{resource:"storage",amount:0,output:{berries:500,carrots:100,wood:30},multiplier:1.8,baseCost:{wood:20},name:"Barn"}};
     
     var menuItems = ["structures","store"];
     var cycleTime = 200;
@@ -231,7 +236,7 @@
     	if (berries.amount+1 <= berries.max)
             berries.amount++;
         $(given).prop('disabled',true);
-        setTimeout(function(){$(given).prop('disabled',false)},150);
+        setTimeout(function(){$(given).prop('disabled',false)},100);
         updateDisplay();
     }
     
