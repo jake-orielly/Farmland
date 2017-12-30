@@ -219,8 +219,8 @@
             if (crops.hasOwnProperty(item)) {
                 document.getElementById(crops[item].name).innerHTML = round(crops[item].amount);
                 document.getElementById(crops[item].name + "Max").innerHTML = "/" + round(crops[item].max);
-                document.getElementById("sellAll" + crops[item].name).innerHTML = calcMoneyAmount(crops[item],-1,0);
-                document.getElementById("buyAll" + crops[item].name).innerHTML = calcMoneyAmount(crops[item],-1,1)
+                document.getElementById("buyAll" + crops[item].name).innerHTML ="x" + Math.floor(money.amount/(crops[item].price*priceMultiplier*2)) + "<span class='mouseoverText'>" + calcMoneyAmount(crops[item],-1,1) + "</span>";
+                document.getElementById("sellAll" + crops[item].name).innerHTML = "x" + Math.floor(crops[item].amount) + "<span class='mouseoverText'>" + calcMoneyAmount(crops[item],-1,0) + "</span>";
             }
         }
         
@@ -355,11 +355,11 @@
         result += "<td><button class='buy mouseover' onClick = buy(" + given + ")>Buy<span class='mouseoverText'>" + calcMoneyAmount(crops[given],1,1) + "</span></button></td>";
         result += "<td><button class='buy mouseover' onClick = buy(" + given + ",5)>x5<span class='mouseoverText'>" + calcMoneyAmount(crops[given],5,1) + "</span></button></td>";
         result += "<td><button class='buy mouseover' onClick = buy(" + given + ",25)>x25<span class='mouseoverText'>" + calcMoneyAmount(crops[given],25,1) + "</span></button></td>";
-        result += "<td><button class='buy mouseover' onClick = buy(" + given + ",'-1')>All<span class='mouseoverText' id='buyAll" + given + "'>" + calcMoneyAmount(crops[given],-1,1) + "</span></button></td>";
+        result += "<td><button class='buy mouseover' onClick = buy(" + given + ",'-1') id='buyAll" + given + "'>All<span class='mouseoverText'>" + calcMoneyAmount(crops[given],-1,1) + "</span></button></td>";
         result += "<td><button class='sell mouseover' onClick = sell(" + given + ")>Sell<span class='mouseoverText'>" + calcMoneyAmount(crops[given],1,0) + "</span></button></td>";
         result += "<td><button class='sell mouseover' onClick = sell(" + given + ",5)>x5<span class='mouseoverText'>" + calcMoneyAmount(crops[given],5,0) + "</span></button></td>"; 
         result += "<td><button class='sell mouseover' onClick = sell(" + given + ",25)>x25<span class='mouseoverText'>" + calcMoneyAmount(crops[given],25,0) + "</span></button></td>";
-        result += "<td><button class='sell mouseover' onClick = sell(" + given + ",'-1')>All<span class='mouseoverText' id='sellAll" + given + "'>" + calcMoneyAmount(crops[given],-1,0) + "</span></button></td>"; 
+        result += "<td><button class='sell mouseover' onClick = sell(" + given + ",'-1') id='sellAll" + given + "'>All<span class='mouseoverText'>" + calcMoneyAmount(crops[given],-1,0) + "</span></button></td>"; 
         document.getElementById(given+"Store").innerHTML = result;
     }
     
