@@ -116,6 +116,12 @@
         <td id="carrotsIncrease"> (+0/s)</td>
     </tr>
     <tr>
+    	<td>Strawberries: </td>
+        <td style="width:30px" id="strawberries">0 </td>
+        <td id="strawberriesMax">/100</td>
+        <td id="strawberriesIncrease"> (+0/s)</td>
+    </tr>
+    <tr>
     	<td>Wood: </td>
         <td style="width:30px" id="wood">0 </td>
         <td id="woodMax">/25</td>
@@ -135,6 +141,9 @@
         </tr>
         <tr>
             <td><button class="btn-modern mouseover" id="carrotPlantNew" onClick="structureNew('carrotPlant')">Carrot  Plant</button></td>
+            <td><button class="btn-modern mouseover" id="strawberryPlantNew" onClick="structureNew('strawberryPlant')">Strawberry Plant</button></td>
+        </tr>
+        <tr>
             <td><button class="btn-modern mouseover" id="barnNew" onClick="structureNew('barn')">Barn</button></td>
         </tr>
     </table>
@@ -147,6 +156,8 @@
         </tr>
         <tr id='carrotsStore'>
         </tr>
+        <tr id='strawberriesStore'>
+        </tr>
         <tr id='woodStore'>
         </tr>
     </table>
@@ -156,12 +167,18 @@
 <script>
 	var berries = {name:"berries",amount:0,max:1000,price:1.5};
     var carrots = {name:"carrots",amount:0,max:400,price:3};
-    var wood = {name:"wood", amount:0, max:100, price:10}
+    var strawberries = {name:"strawberries",amount:0,max:100,price:15};
+    var wood = {name:"wood", amount:0, max:100, price:9}
     var money = {name:"money", amount:0}
     
-    var crops = {berries:berries,carrots:carrots,wood:wood};
+    var crops = {berries:berries,carrots:carrots,wood:wood,strawberries:strawberries};
     var resources = [money];
-    var structures = {berryBush:{resource:berries,amount:0,output:0.8,multiplier:1.5,baseCost:{berries:10},name:"Berry Bush"},carrotPlant:{resource:carrots,amount:0,output:0.5,multiplier:1.7,baseCost:{carrots:15},name:"Carrot Plant"},barn:{resource:"storage",amount:0,output:{berries:500,carrots:100,wood:30},multiplier:1.8,baseCost:{wood:20},name:"Barn"}};
+    var structures = {
+        berryBush:{resource:berries,amount:0,multiplier:1.5,baseCost:{berries:10},name:"Berry Bush",output:0.8},
+        carrotPlant:{resource:carrots,amount:0,multiplier:1.7,baseCost:{carrots:15},name:"Carrot Plant",output:0.5},
+        strawberryPlant:{resource:strawberries,amount:0,multiplier:2.1,baseCost:{strawberries:20},name:"Strawberry Plant",output:0.3},
+        barn:{resource:"storage",amount:0,multiplier:1.8,baseCost:{wood:20},name:"Barn",
+              output:{berries:500,carrots:100,wood:30}}};
     
     var menuItems = ["structures","store"];
     var cycleTime = 200;
@@ -202,6 +219,8 @@
             if (crops.hasOwnProperty(item)) {
                 document.getElementById(crops[item].name).innerHTML = round(crops[item].amount);
                 document.getElementById(crops[item].name + "Max").innerHTML = "/" + round(crops[item].max);
+                document.getElementById("sellAll" + crops[item].name).innerHTML = calcMoneyAmount(crops[item],-1,0);
+                document.getElementById("buyAll" + crops[item].name).innerHTML = calcMoneyAmount(crops[item],-1,1)
             }
         }
         
@@ -306,7 +325,7 @@
     
     function sell(given,quantity = 1) {
         if (quantity == -1) {
-            sell(given, given.amount);
+            sell(given, Math.floor(given.amount));
         }
         else {
             if (given.amount >= quantity) {
@@ -333,15 +352,36 @@
     function buildStoreButtons(given) { //creates the HTML for all the buttons for 1 item in the store
         var result = "";
         result += "<td>" + capitalizeFirst(given) + "</td>";
-        result += "<td><button class='buy' onClick = buy(" + given + ")>Buy</button></td>";
-        result += "<td><button class='buy' onClick = buy(" + given + ",5)>x5</button></td>";
-        result += "<td><button class='buy' onClick = buy(" + given + ",25)>x25</button></td>";
-        result += "<td><button class='buy' onClick = buy(" + given + ",'-1')>All</button></td>";
-        result += "<td><button class='sell' onClick = sell(" + given + ")>Sell</button></td>";
-        result += "<td><button class='sell' onClick = sell(" + given + ",5)>x5</button></td>"; 
-        result += "<td><button class='sell' onClick = sell(" + given + ",25)>x25</button></td>";
-        result += "<td><button class='sell' onClick = sell(" + given + ",'-1')>All</button></td>"; 
+        result += "<td><button class='buy mouseover' onClick = buy(" + given + ")>Buy<span class='mouseoverText'>" + calcMoneyAmount(crops[given],1,1) + "</span></button></td>";
+        result += "<td><button class='buy mouseover' onClick = buy(" + given + ",5)>x5<span class='mouseoverText'>" + calcMoneyAmount(crops[given],5,1) + "</span></button></td>";
+        result += "<td><button class='buy mouseover' onClick = buy(" + given + ",25)>x25<span class='mouseoverText'>" + calcMoneyAmount(crops[given],25,1) + "</span></button></td>";
+        result += "<td><button class='buy mouseover' onClick = buy(" + given + ",'-1')>All<span class='mouseoverText' id='buyAll" + given + "'>" + calcMoneyAmount(crops[given],-1,1) + "</span></button></td>";
+        result += "<td><button class='sell mouseover' onClick = sell(" + given + ")>Sell<span class='mouseoverText'>" + calcMoneyAmount(crops[given],1,0) + "</span></button></td>";
+        result += "<td><button class='sell mouseover' onClick = sell(" + given + ",5)>x5<span class='mouseoverText'>" + calcMoneyAmount(crops[given],5,0) + "</span></button></td>"; 
+        result += "<td><button class='sell mouseover' onClick = sell(" + given + ",25)>x25<span class='mouseoverText'>" + calcMoneyAmount(crops[given],25,0) + "</span></button></td>";
+        result += "<td><button class='sell mouseover' onClick = sell(" + given + ",'-1')>All<span class='mouseoverText' id='sellAll" + given + "'>" + calcMoneyAmount(crops[given],-1,0) + "</span></button></td>"; 
         document.getElementById(given+"Store").innerHTML = result;
+    }
+    
+    function calcMoneyAmount (given,amount,isBuy) {
+        var text;
+        var max;
+        if (amount == -1) {
+            if (isBuy) {
+                max = money.amount/(given.price*priceMultiplier*2);
+                return calcMoneyAmount(given,Math.floor(max),isBuy);
+            }
+            else
+                return calcMoneyAmount(given,Math.floor(given.amount),isBuy);
+        }
+        else {
+            if (isBuy)
+                text = "-";
+            else
+                text = "+";
+            text += "$"
+            return text + (given.price * amount * (priceMultiplier + (priceMultiplier*isBuy)));
+        }
     }
 </script>
 
